@@ -1,5 +1,5 @@
 // @flow strict
-import * as React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import borders from './Borders.css';
@@ -73,84 +73,14 @@ const getRoundingStyle = (r: Rounding): Style => {
   return identity();
 };
 
-export default class Touchable extends React.Component<Props> {
-  static propTypes = {
-    accessibilityControls: PropTypes.string,
-    accessibilityExpanded: PropTypes.bool,
-    accessibilityHaspopup: PropTypes.bool,
-    accessibilityLabel: PropTypes.string,
-    children: PropTypes.node,
-    disabled: PropTypes.bool,
-    fullHeight: PropTypes.bool,
-    fullWidth: PropTypes.bool,
-    mouseCursor: PropTypes.oneOf([
-      'copy',
-      'grab',
-      'grabbing',
-      'move',
-      'noDrop',
-      'pointer',
-      'zoomIn',
-      'zoomOut',
-    ]),
-    onBlur: PropTypes.func,
-    onFocus: PropTypes.func,
-    onTouch: PropTypes.func,
-    onMouseEnter: PropTypes.func,
-    onMouseLeave: PropTypes.func,
-    rounding: RoundingPropType,
-  };
+const forwardEvent = (disabled: boolean, handler: any => void) => event => {
+  if (!disabled && handler) {
+    handler({ event });
+  }
+};
 
-  handleKeyPress = (event: SyntheticKeyboardEvent<HTMLDivElement>) => {
-    const { disabled, onTouch } = this.props;
-    // Check to see if space or enter were pressed
-    if (
-      !disabled &&
-      onTouch &&
-      (event.charCode === SPACE_CHAR_CODE || event.charCode === ENTER_CHAR_CODE)
-    ) {
-      // Prevent the default action to stop scrolling when space is pressed
-      event.preventDefault();
-      onTouch({ event });
-    }
-  };
-
-  handleBlur = (event: SyntheticFocusEvent<HTMLDivElement>) => {
-    const { disabled, onBlur } = this.props;
-    if (!disabled && onBlur) {
-      onBlur({ event });
-    }
-  };
-
-  handleFocus = (event: SyntheticFocusEvent<HTMLDivElement>) => {
-    const { disabled, onFocus } = this.props;
-    if (!disabled && onFocus) {
-      onFocus({ event });
-    }
-  };
-
-  handleMouseEnter = (event: SyntheticMouseEvent<HTMLDivElement>) => {
-    const { disabled, onMouseEnter } = this.props;
-    if (!disabled && onMouseEnter) {
-      onMouseEnter({ event });
-    }
-  };
-
-  handleMouseLeave = (event: SyntheticMouseEvent<HTMLDivElement>) => {
-    const { disabled, onMouseLeave } = this.props;
-    if (!disabled && onMouseLeave) {
-      onMouseLeave({ event });
-    }
-  };
-
-  handleClick = (event: SyntheticMouseEvent<HTMLDivElement>) => {
-    const { disabled, onTouch } = this.props;
-    if (!disabled && onTouch) {
-      onTouch({ event });
-    }
-  };
-
-  render() {
+const Touchable = React.forwardRef(
+  (props: Props, ref: React.ElementRef<any>) => {
     const {
       accessibilityControls,
       accessibilityExpanded,
@@ -161,8 +91,13 @@ export default class Touchable extends React.Component<Props> {
       fullWidth = true,
       fullHeight,
       mouseCursor = 'pointer',
+      onBlur,
+      onFocus,
+      onMouseEnter,
+      onMouseLeave,
+      onTouch,
       rounding = 0,
-    } = this.props;
+    } = props;
 
     const classes = classnames(
       styles.touchable,
@@ -174,6 +109,38 @@ export default class Touchable extends React.Component<Props> {
       }
     );
 
+    const handleBlur = useCallback(forwardEvent(disabled, onBlur), [
+      disabled,
+      onBlur,
+    ]);
+    const handleClick = useCallback(forwardEvent(disabled, onTouch), [
+      disabled,
+      onTouch,
+    ]);
+    const handleFocus = useCallback(forwardEvent(disabled, onFocus), [
+      disabled,
+      onFocus,
+    ]);
+    const handleMouseEnter = useCallback(forwardEvent(disabled, onMouseEnter), [
+      disabled,
+      onMouseEnter,
+    ]);
+    const handleMouseLeave = useCallback(forwardEvent(disabled, onMouseLeave), [
+      disabled,
+      onMouseLeave,
+    ]);
+    const handleKeyPress = useCallback(
+      forwardEvent(disabled, ({ event }) => {
+        // Check to see if space or enter were pressed
+        if ([SPACE_CHAR_CODE || ENTER_CHAR_CODE].includes(event.charCode)) {
+          // Prevent the default action to stop scrolling when space is pressed
+          event.preventDefault();
+          onTouch({ event });
+        }
+      }),
+      [disabled, onTouch]
+    );
+
     return (
       <div
         aria-controls={accessibilityControls}
@@ -182,12 +149,13 @@ export default class Touchable extends React.Component<Props> {
         aria-haspopup={accessibilityHaspopup}
         aria-label={accessibilityLabel}
         className={classes}
-        onClick={this.handleClick}
-        onBlur={this.handleBlur}
-        onFocus={this.handleFocus}
-        onMouseEnter={this.handleMouseEnter}
-        onMouseLeave={this.handleMouseLeave}
-        onKeyPress={this.handleKeyPress}
+        onBlur={handleBlur}
+        onClick={handleClick}
+        onFocus={handleFocus}
+        onKeyPress={handleKeyPress}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        ref={ref}
         role="button"
         tabIndex={disabled ? null : '0'}
       >
@@ -195,4 +163,37 @@ export default class Touchable extends React.Component<Props> {
       </div>
     );
   }
-}
+);
+
+//  NOTE: This is needed in order to override the ForwardRef display name that is
+//  used in dev tools and in snapshot testing.
+Touchable.displayName = 'Touchable';
+
+Touchable.propTypes = {
+  accessibilityControls: PropTypes.string,
+  accessibilityExpanded: PropTypes.bool,
+  accessibilityHaspopup: PropTypes.bool,
+  accessibilityLabel: PropTypes.string,
+  children: PropTypes.node,
+  disabled: PropTypes.bool,
+  fullHeight: PropTypes.bool,
+  fullWidth: PropTypes.bool,
+  mouseCursor: PropTypes.oneOf([
+    'copy',
+    'grab',
+    'grabbing',
+    'move',
+    'noDrop',
+    'pointer',
+    'zoomIn',
+    'zoomOut',
+  ]),
+  onBlur: PropTypes.func,
+  onFocus: PropTypes.func,
+  onTouch: PropTypes.func,
+  onMouseEnter: PropTypes.func,
+  onMouseLeave: PropTypes.func,
+  rounding: RoundingPropType,
+};
+
+export default Touchable;
