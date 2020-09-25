@@ -17,6 +17,144 @@ card(
 
 card(
   <Example
+    id="animationExample"
+    name="Example: animation on show and dismiss"
+    description={`
+    A \`<Sheet>\` can be animated by wrapping it in a \`<AnimationController>\` and providing an \`"onDismissEnd"\` callback function which will ultimately remove the element from the React tree. 
+    The \`<AnimationController>\` children render prop will provide an \`"onDismissStart"\` callback function which needs to be passed as the event handler to all your elements which trigger the dismiss action.    
+    In the example below, please notice the following animations:
+    - On show: backdrop fade in + slide in from the side, from the "Open sheet" button entrypoint.
+    - On dismiss: backdrop fade out + slide out to the side, from 7 exitpoints:
+      - ESC key
+      - Click on outside
+      - X button (header)
+      - Close button (footer)
+      - Right arrow icon red button (content)
+      - Done red button (content)
+      - Left arrow red icon button (content)
+
+    PS: This animation is controlled by \`useReducedMotion\`.
+  `}
+    defaultCode={`
+function AnimationExample() {
+  const [shouldShow, setShouldShow] = React.useState(false);
+
+  return (
+    <>
+      <Button
+        inline
+        text="Open sheet"
+        onClick={() => setShouldShow(true)}
+      />
+      {shouldShow && (
+        <Layer zIndex={new FixedZIndex(2)}>
+          <AnimationController onDismissEnd={() => setShouldShow(false)}>
+            {({ onDismissStart }) => (
+              <Sheet
+                accessibilityDismissButtonLabel="Close"
+                accessibilitySheetLabel="Animated sheet"
+                footer={
+                  <Heading size="md">
+                    <Button inline onClick={onDismissStart} text="Close" />
+                  </Heading>
+                }
+                heading="Animated Sheet"
+                onDismiss={onDismissStart}
+                size="md"
+              >
+                <Row justifyContent="center" alignItems="center" height="100%">
+                 <IconButton 
+                    accessibilityLabel="Done icon left"
+                    icon="directional-arrow-right" 
+                    iconColor="red"
+                    inline 
+                    onClick={onDismissStart} 
+                    size="lg"                     
+                  />
+                  <Button color="red" inline onClick={onDismissStart} size="lg" text="Done" />
+                  <IconButton 
+                    accessibilityLabel="Done icon right"
+                    icon="directional-arrow-left" 
+                    iconColor="red"
+                    inline 
+                    onClick={onDismissStart} 
+                    size="lg"                     
+                  />
+                </Row>
+              </Sheet>
+            )}
+          </AnimationController>
+        </Layer>
+      )}
+    </>
+  );
+}`}
+  />
+);
+
+card(
+  <Example
+    id="noAnimationExample"
+    name="Example: no animation on show and dismiss"
+    description={`
+    By default, when not using <AnimationController>, there are no animations. 
+    In that case, please directly provide to your elements your callback function which will ultimately remove the element from the React tree.
+  `}
+    defaultCode={`
+function NoAnimationExample() {
+  const [shouldShow, setShouldShow] = React.useState(false);
+
+  return (
+    <>
+      <Button
+        inline
+        text="Open sheet"
+        onClick={() => setShouldShow(true)}
+      />
+      {shouldShow && (
+        <Layer zIndex={new FixedZIndex(2)}>
+          <Sheet
+            accessibilityDismissButtonLabel="Close"
+            accessibilitySheetLabel="Non-animated sheet"
+            footer={
+              <Heading size="md">
+                <Button inline onClick={() => setShouldShow(false)} text="Close" />
+              </Heading>
+            }
+            heading="Non-animated Sheet"
+            onDismiss={() => setShouldShow(false)}
+            size="md"
+          >
+            <Row justifyContent="center" alignItems="center" height="100%">
+              <IconButton 
+                accessibilityLabel="Done icon left"
+                icon="directional-arrow-right" 
+                iconColor="red"
+                inline 
+                onClick={() => setShouldShow(false)} 
+                size="lg"                     
+              />
+              <Button color="red" inline onClick={() => setShouldShow(false)} size="lg" text="Done" />
+              <IconButton 
+                accessibilityLabel="Done icon right"
+                icon="directional-arrow-left" 
+                iconColor="red"
+                inline 
+                onClick={() => setShouldShow(false)} 
+                size="lg"                     
+              />
+            </Row>
+          </Sheet>
+        </Layer>
+      )}
+    </>
+  );
+}`}
+  />
+);
+
+card(
+  <Example
     id="sizesExample"
     name="Sizes"
     description={`
@@ -24,7 +162,7 @@ card(
       All Sheets have a max width of 100%.
     `}
     defaultCode={`
-function Example(props) {
+function SizesExample(props) {
   function reducer(state, action) {
     switch (action.type) {
       case 'small':
@@ -68,16 +206,20 @@ function Example(props) {
       </Box>
       {state.size && (
         <Layer zIndex={new FixedZIndex(2)}>
-          <Sheet
-            accessibilityDismissButtonLabel="Dismiss"
-            accessibilitySheetLabel="Example sheet to demonstrate different sizes"
-            footer={<Heading size="md">Footer</Heading>}
-            heading={state.heading}
-            onDismiss={() => { dispatch({ type: 'none' }) }}
-            size={state.size}
-          >
-            <Heading size="md">Children</Heading>
-          </Sheet>
+          <AnimationController onDismissEnd={() => { dispatch({ type: 'none' }) }}>
+            {({ onDismissStart }) => (
+              <Sheet
+                accessibilityDismissButtonLabel="Dismiss"
+                accessibilitySheetLabel="Example sheet to demonstrate different sizes"
+                footer={<Heading size="md">Footer</Heading>}
+                heading={state.heading}
+                onDismiss={onDismissStart}
+                size={state.size}
+              >
+                <Heading size="md">Content</Heading>
+              </Sheet>
+            )}
+          </AnimationController>
         </Layer>
       )}
     </>
@@ -97,27 +239,31 @@ card(
       PS: The user will still be able to close the Sheet via the Dismiss button and the ESC key.
     `}
     defaultCode={`
-function Example(props) {
-  const [showSheet, setShowSheet] = React.useState(false);
+function CloseOnOutsideExample(props) {
+  const [shouldShow, setShouldShow] = React.useState(false);
   return (
     <>
       <Button
         inline
         text="Open sheet"
-        onClick={() => { setShowSheet(!showSheet) }}
+        onClick={() => setShouldShow(true)}
       />
-      {showSheet && (
+      {shouldShow && (
         <Layer zIndex={new FixedZIndex(2)}>
-          <Sheet
-            accessibilityDismissButtonLabel="Dismiss"
-            accessibilitySheetLabel="Example sheet to demonstrate preventing close on outside click"
-            closeOnOutsideClick={false}
-            heading="Sheet that can't be closed by clicking outside"
-            onDismiss={() => { setShowSheet(!showSheet) }}
-            size="lg"
-          >
-            <Text>Click on the dismiss button or press the ESC key to close the sheet.</Text>
-          </Sheet>
+          <AnimationController onDismissEnd={() => setShouldShow(false)}>
+            {({ onDismissStart }) => (
+              <Sheet
+                accessibilityDismissButtonLabel="Dismiss"
+                accessibilitySheetLabel="Example sheet to demonstrate preventing close on outside click"
+                closeOnOutsideClick={false}
+                heading="Sheet that can't be closed by clicking outside"
+                onDismiss={onDismissStart}
+                size="lg"
+              >
+                <Text>Click on the dismiss button or press the ESC key to close the sheet.</Text>
+              </Sheet>
+            )}
+          </AnimationController>
         </Layer>
       )}
     </>
@@ -137,98 +283,102 @@ card(
       The shadow (when scrolling) between the \`heading\`, \`children\`, and \`footer\` are included as well. Please try scrolling up and down the children to verify the shadow.
     `}
     defaultCode={`
-function Example(props) {
-  const [showSheet, setShowSheet] = React.useState(false);
+function DefaultPaddingExample(props) {
+  const [shouldShow, setShouldShow] = React.useState(false);
   return (
     <>
       <Button
         inline
         text="View default padding & styling"
-        onClick={() => { setShowSheet(!showSheet) }}
+        onClick={() => setShouldShow(true)}
       />
-      {showSheet && (
+      {shouldShow && (
         <Layer zIndex={new FixedZIndex(2)}>
-          <Sheet
-            accessibilityDismissButtonLabel="Close"
-            accessibilitySheetLabel="Example sheet to demonstrate default padding and styling"
-            heading="Sheet default styling"
-            onDismiss={() => { setShowSheet(!showSheet) }}
-            footer={
-              <Box color="lightGray">
-                <Heading size="md">Footer</Heading>
-              </Box>
-            }
-            size="md"
-          >
-            <Box marginBottom={2}>
-              <Text weight="bold">English</Text>
-              <Text>
-                <ol>
-                  <li>One</li>
-                  <li>Two</li>
-                  <li>Three</li>
-                  <li>Four</li>
-                  <li>Five</li>
-                  <li>Six</li>
-                  <li>Seven</li>
-                  <li>Eight</li>
-                  <li>Nine</li>
-                  <li>Ten</li>
-                </ol>
-              </Text>
-            </Box>
-            <Box marginBottom={2}>
-              <Text weight="bold">Español</Text>
-              <Text>
-                <ol>
-                  <li>Uno</li>
-                  <li>Dos</li>
-                  <li>Tres</li>
-                  <li>Cuatro</li>
-                  <li>Cinco</li>
-                  <li>Seis</li>
-                  <li>Siete</li>
-                  <li>Ocho</li>
-                  <li>Nueve</li>
-                  <li>Diez</li>
-                </ol>
-              </Text>
-            </Box>
-            <Box marginBottom={2}>
-              <Text weight="bold">Português</Text>
-              <Text>
-                <ol>
-                  <li>Um</li>
-                  <li>Dois</li>
-                  <li>Três</li>
-                  <li>Quatro</li>
-                  <li>Cinco</li>
-                  <li>Seis</li>
-                  <li>Sete</li>
-                  <li>Oito</li>
-                  <li>Nove</li>
-                  <li>Dez</li>
-                </ol>
-              </Text>
-            </Box>
-            <Box marginBottom={2}>
-              <Text weight="bold">普通话</Text>
-              <Text>
-                <ol>
-                  <li>一</li>
-                  <li>二</li>
-                  <li>三</li>
-                  <li>四</li>
-                  <li>五</li>
-                  <li>六</li>
-                  <li>七</li>
-                  <li>八</li>
-                  <li>九</li>
-                  <li>十</li>
-                </ol>
-              </Text>
-            </Box>
-          </Sheet>
+          <AnimationController onDismissEnd={() => setShouldShow(false)}>
+            {({ onDismissStart }) => (
+              <Sheet
+                accessibilityDismissButtonLabel="Close"
+                accessibilitySheetLabel="Example sheet to demonstrate default padding and styling"
+                heading="Sheet default styling"
+                onDismiss={onDismissStart}
+                footer={
+                  <Box color="lightGray">
+                    <Heading size="md">Footer</Heading>
+                  </Box>
+                }
+                size="md"
+              >
+                <Box marginBottom={2}>
+                  <Text weight="bold">English</Text>
+                  <Text>
+                    <ol>
+                      <li>One</li>
+                      <li>Two</li>
+                      <li>Three</li>
+                      <li>Four</li>
+                      <li>Five</li>
+                      <li>Six</li>
+                      <li>Seven</li>
+                      <li>Eight</li>
+                      <li>Nine</li>
+                      <li>Ten</li>
+                    </ol>
+                  </Text>
+                </Box>
+                <Box marginBottom={2}>
+                  <Text weight="bold">Español</Text>
+                  <Text>
+                    <ol>
+                      <li>Uno</li>
+                      <li>Dos</li>
+                      <li>Tres</li>
+                      <li>Cuatro</li>
+                      <li>Cinco</li>
+                      <li>Seis</li>
+                      <li>Siete</li>
+                      <li>Ocho</li>
+                      <li>Nueve</li>
+                      <li>Diez</li>
+                    </ol>
+                  </Text>
+                </Box>
+                <Box marginBottom={2}>
+                  <Text weight="bold">Português</Text>
+                  <Text>
+                    <ol>
+                      <li>Um</li>
+                      <li>Dois</li>
+                      <li>Três</li>
+                      <li>Quatro</li>
+                      <li>Cinco</li>
+                      <li>Seis</li>
+                      <li>Sete</li>
+                      <li>Oito</li>
+                      <li>Nove</li>
+                      <li>Dez</li>
+                    </ol>
+                  </Text>
+                </Box>  
+                <Box marginBottom={2}>
+                  <Text weight="bold">普通话</Text>
+                  <Text>
+                    <ol>
+                      <li>一</li>
+                      <li>二</li>
+                      <li>三</li>
+                      <li>四</li>
+                      <li>五</li>
+                      <li>六</li>
+                      <li>七</li>
+                      <li>八</li>
+                      <li>九</li>
+                      <li>十</li>
+                    </ol>
+                  </Text>
+                </Box>            
+              </Sheet>
+            )}
+          </AnimationController>
         </Layer>
       )}
     </>
@@ -245,23 +395,27 @@ card(
       By design, the props children, footer and heading are all optional, so this example is just to demonstrate it's possible to have a completely empty Sheet, even though that is unlikely to be a real use case.
     `}
     defaultCode={`
-function Example(props) {
-  const [showSheet, setShowSheet] = React.useState(false);
+function EmptyExample(props) {
+  const [shouldShow, setShouldShow] = React.useState(false);
   return (
     <>
       <Button
         inline
         text="View empty sheet"
-        onClick={() => { setShowSheet(!showSheet) }}
+        onClick={() => setShouldShow(true)}
       />
-      {showSheet && (
+      {shouldShow && (
         <Layer zIndex={new FixedZIndex(2)}>
-          <Sheet
-            accessibilityDismissButtonLabel="Close"
-            accessibilitySheetLabel="Example to demonstrate empty sheet"
-            onDismiss={() => { setShowSheet(!showSheet) }}
-            size="sm"
-          />
+          <AnimationController onDismissEnd={() => setShouldShow(false)}>
+            {({ onDismissStart }) => (
+              <Sheet
+                accessibilityDismissButtonLabel="Close"
+                accessibilitySheetLabel="Example to demonstrate empty sheet"
+                onDismiss={onDismissStart}
+                size="sm"
+              />
+            )}
+          </AnimationController>
         </Layer>
       )}
     </>
@@ -279,8 +433,8 @@ card(
     A \`Sheet\` with focus using refs
   `}
     defaultCode={`
-function SheetRefExample() {
-  const [showSheet, setShowSheet] = React.useState(false);
+function RefExample() {
+  const [shouldShow, setShouldShow] = React.useState(false);
 
   const sheetRef = React.useRef(null);
   const buttonRef = React.useRef(null);
@@ -296,32 +450,36 @@ function SheetRefExample() {
       <Button
         inline
         text="Open sheet"
-        onClick={() => { setShowSheet(!showSheet) }}
+        onClick={() => setShouldShow(true)}
       />
-      {showSheet && (
+      {shouldShow && (
         <Layer zIndex={new FixedZIndex(2)}>
-          <>
-            <Sheet
-              accessibilityDismissButtonLabel="Close"
-              accessibilitySheetLabel="Focused sheet"
-              onDismiss={() => { setShowSheet(!showSheet) }}
-              ref={sheetRef}
-              size="md"
-            >
-              <Box color="white" minHeight={400} padding={8}>
-                <Box marginBottom={4}>
-                  <Heading size="md">Focused content</Heading>
-                </Box>
-                <Button
-                  inline
-                  onClick={() => alert('Geronimoooo!')}
-                  ref={buttonRef}
-                  text="Focused button (Press Enter to be convinced)"
-                />
-              </Box>
-            </Sheet>
-            <div ref={callbackRef} />
-          </>
+          <AnimationController onDismissEnd={() => setShouldShow(false)}>
+            {({ onDismissStart }) => (
+              <>
+                <Sheet
+                  accessibilityDismissButtonLabel="Close"
+                  accessibilitySheetLabel="Focused sheet"
+                  onDismiss={onDismissStart}
+                  ref={sheetRef}
+                  size="md"
+                >
+                  <Box color="white" minHeight={400} padding={8}>
+                    <Box marginBottom={4}>
+                      <Heading size="md">Focused content</Heading>                
+                    </Box>
+                    <Button 
+                      inline 
+                      onClick={() => alert('Geronimoooo!')}
+                      ref={buttonRef} 
+                      text="Focused button (Press Enter to be convinced)" 
+                    />
+                  </Box>
+                </Sheet>
+                <div ref={callbackRef} />
+              </>
+              )}
+          </AnimationController>
         </Layer>
       )}
     </>
@@ -451,7 +609,7 @@ card(
       },
       {
         name: 'size',
-        type: `"sm" | "md" | "lg" | number`,
+        type: `"sm" | "md" | "lg"`,
         defaultValue: 'sm',
         description: [
           'Determine the width of the Sheet component. Possible values:',
