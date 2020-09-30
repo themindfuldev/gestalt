@@ -78,12 +78,10 @@ const SheetWithForwardRef: React$AbstractComponent<
     children,
     closeOnOutsideClick = true,
     footer,
-    // $FlowExpectedError[prop-missing]
-    heading,
+    heading = undefined,
     onDismiss,
     size = 'sm',
-    // $FlowExpectedError[prop-missing]
-    subHeading,
+    subHeading = undefined,
   } = props;
 
   const [showTopShadow, setShowTopShadow] = useState<boolean>(false);
