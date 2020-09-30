@@ -11,17 +11,40 @@ const Valid = (
     heading="Sheet title"
     onDismiss={() => {}}
     size="sm"
+    subHeading={<section />}
   >
     <section />
   </Sheet>
 );
 
-// $FlowExpectedError[prop-missing]
+// $FlowExpectedError[incompatible-type]
 const MissingProp = <Sheet />;
 
-// $FlowExpectedError[prop-missing]
-const NonExistingProp = <Sheet nonexisting={33} />;
+const NonExistingProp = (
+  // $FlowExpectedError[incompatible-type]
+  <Sheet
+    accessibilityDismissButtonLabel="Dismiss"
+    accessibilitySheetLabel="Sheet"
+    onDismiss={() => {}}
+    nonExisting={33}
+  />
+);
 
-// $FlowExpectedError[prop-missing]
-// $FlowExpectedError[incompatible-type]
-const InvalidTypeProp = <Sheet size="xxl" />;
+const SubHeadingRequiresHeadingProp = (
+  // $FlowExpectedError[incompatible-type]
+  <Sheet
+    accessibilityDismissButtonLabel="Dismiss"
+    accessibilitySheetLabel="Sheet"
+    onDismiss={() => {}}
+    subHeading={<section />}
+  />
+);
+
+const InvalidTypeProp = (
+  // $FlowExpectedError[incompatible-type]
+  <Sheet
+    accessibilityDismissButtonLabel="Dismiss"
+    accessibilitySheetLabel="Sheet"
+    onDismiss={123}
+  />
+);

@@ -30,6 +30,7 @@ describe('Sheet', () => {
         onDismiss={jest.fn()}
         ref={sheetRef}
         size="sm"
+        subHeading={<section />}
       >
         Sheet content
       </Sheet>

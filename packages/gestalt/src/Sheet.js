@@ -21,16 +21,22 @@ import StopScrollBehavior from './behaviors/StopScrollBehavior.js';
 import sheetStyles from './Sheet.css';
 import TrapFocusBehavior from './behaviors/TrapFocusBehavior.js';
 
-type Props = {|
+type HeadingProps = {|
+  heading: string,
+  subHeading?: Node,
+|};
+
+type MainProps = {|
   accessibilityDismissButtonLabel: string,
   accessibilitySheetLabel: string,
   children?: Node,
   closeOnOutsideClick?: boolean,
   footer?: Node,
-  heading?: string,
   onDismiss: () => void,
   size?: 'sm' | 'md' | 'lg',
 |};
+
+type Props = MainProps | {| ...MainProps, ...HeadingProps |};
 
 const SIZE_WIDTH_MAP = {
   sm: 540,
@@ -71,10 +77,13 @@ const SheetWithForwardRef: React$AbstractComponent<
     accessibilitySheetLabel,
     children,
     closeOnOutsideClick = true,
-    onDismiss,
     footer,
+    // $FlowExpectedError[prop-missing]
     heading,
+    onDismiss,
     size = 'sm',
+    // $FlowExpectedError[prop-missing]
+    subHeading,
   } = props;
 
   const [showTopShadow, setShowTopShadow] = useState<boolean>(false);
@@ -177,6 +186,7 @@ const SheetWithForwardRef: React$AbstractComponent<
                         />
                       </Box>
                     </Row>
+                    {subHeading}
                   </div>
                 )}
                 {!heading && (
@@ -235,9 +245,10 @@ SheetWithForwardRef.propTypes = {
   children: PropTypes.node,
   closeOnOutsideClick: PropTypes.bool,
   footer: PropTypes.node,
-  heading: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  heading: PropTypes.string,
   onDismiss: PropTypes.func,
   size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  subHeading: PropTypes.node,
 };
 
 SheetWithForwardRef.displayName = 'Sheet';

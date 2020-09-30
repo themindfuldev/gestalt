@@ -279,7 +279,7 @@ card(
     name="Default padding &amp; styling"
     description={`
       Some of the padding required to style your sheet has already been provided for ease of use. The sheet shown
-      by clicking on the "View padding" button highlights the default behavior.
+      by clicking on the "View default padding & styling" button highlights the default behavior.
       The shadow (when scrolling) between the \`heading\`, \`children\`, and \`footer\` are included as well. Please try scrolling up and down the children to verify the shadow.
     `}
     defaultCode={`
@@ -308,7 +308,7 @@ function DefaultPaddingExample(props) {
                 }
                 size="md"
               >
-                <Box marginBottom={2}>
+                <Box marginBottom={8}>
                   <Text weight="bold">English</Text>
                   <Text>
                     <ol>
@@ -325,7 +325,7 @@ function DefaultPaddingExample(props) {
                     </ol>
                   </Text>
                 </Box>
-                <Box marginBottom={2}>
+                <Box marginBottom={8}>
                   <Text weight="bold">Español</Text>
                   <Text>
                     <ol>
@@ -342,7 +342,7 @@ function DefaultPaddingExample(props) {
                     </ol>
                   </Text>
                 </Box>
-                <Box marginBottom={2}>
+                <Box marginBottom={8}>
                   <Text weight="bold">Português</Text>
                   <Text>
                     <ol>
@@ -359,7 +359,7 @@ function DefaultPaddingExample(props) {
                     </ol>
                   </Text>
                 </Box>  
-                <Box marginBottom={2}>
+                <Box marginBottom={8}>
                   <Text weight="bold">普通话</Text>
                   <Text>
                     <ol>
@@ -378,6 +378,164 @@ function DefaultPaddingExample(props) {
                 </Box>            
               </Sheet>
             )}
+          </AnimationController>
+        </Layer>
+      )}
+    </>
+  );
+}
+`}
+  />
+);
+
+card(
+  <Example
+    id="subHeadingExample"
+    name="Sub-heading"
+    description={`
+      Specifies a sub-heading component to be docked under the heading. 
+      The shadow (when scrolling) between the \`subHeading\`, \`children\`, and \`footer\` are included as well. Please try scrolling up and down the children to verify the shadow.
+    `}
+    defaultCode={`
+function SubheadingExample(props) {
+  const SheetWithSubheading = ({
+    onDismissStart,
+  }) => {
+    const [activeTabIndex, setActiveTabIndex] = React.useState(0);
+    const enRef = React.useRef();
+    const esRef = React.useRef();
+    const ptRef = React.useRef();
+    const chRef = React.useRef();
+    const refs = [enRef, esRef, ptRef, chRef];
+  
+    const handleChangeTab = ({ activeTabIndex, event }) => {
+      event.preventDefault();
+      setActiveTabIndex(activeTabIndex);
+      refs[activeTabIndex].current.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
+
+    return (
+      <Sheet
+        accessibilityDismissButtonLabel="Close"
+        accessibilitySheetLabel="Example sheet to demonstrate subHeading"
+        heading="Sheet with subHeading"
+        onDismiss={onDismissStart}
+        footer={<Heading size="md">Footer</Heading>}
+        size="md"
+        subHeading={
+          <Box marginBottom={4} marginStart={8} marginEnd={8}>
+            <Tabs
+              tabs={[
+                {
+                  text: "English",
+                  href: "#"
+                },
+                {
+                  text: "Español",
+                  href: "#"
+                },
+                {
+                  text: "Português",
+                  href: "#"
+                },
+                {
+                  text: '普通话',
+                  href: '#'
+                }
+              ]}
+              activeTabIndex={activeTabIndex}
+              onChange={handleChangeTab}
+            />
+          </Box>
+        }
+      >
+        <Box marginBottom={8} ref={enRef}>
+          <Text weight="bold">English</Text>
+          <Text>
+            <ol>
+              <li>One</li>
+              <li>Two</li>
+              <li>Three</li>
+              <li>Four</li>
+              <li>Five</li>
+              <li>Six</li>
+              <li>Seven</li>
+              <li>Eight</li>
+              <li>Nine</li>
+              <li>Ten</li>
+            </ol>
+          </Text>
+        </Box>
+        <Box marginBottom={8} ref={esRef}>
+          <Text weight="bold">Español</Text>
+          <Text>
+            <ol>
+              <li>Uno</li>
+              <li>Dos</li>
+              <li>Tres</li>
+              <li>Cuatro</li>
+              <li>Cinco</li>
+              <li>Seis</li>
+              <li>Siete</li>
+              <li>Ocho</li>
+              <li>Nueve</li>
+              <li>Diez</li>
+            </ol>
+          </Text>
+        </Box>
+        <Box marginBottom={8} ref={ptRef}>
+          <Text weight="bold">Português</Text>
+          <Text>
+            <ol>
+              <li>Um</li>
+              <li>Dois</li>
+              <li>Três</li>
+              <li>Quatro</li>
+              <li>Cinco</li>
+              <li>Seis</li>
+              <li>Sete</li>
+              <li>Oito</li>
+              <li>Nove</li>
+              <li>Dez</li>
+            </ol>
+          </Text>
+        </Box>  
+        <Box marginBottom={8} ref={chRef}>
+          <Text weight="bold">普通话</Text>
+          <Text>
+            <ol>
+              <li>一</li>
+              <li>二</li>
+              <li>三</li>
+              <li>四</li>
+              <li>五</li>
+              <li>六</li>
+              <li>七</li>
+              <li>八</li>
+              <li>九</li>
+              <li>十</li>
+            </ol>
+          </Text>
+        </Box>            
+      </Sheet>
+    );
+  };
+
+  const [shouldShow, setShouldShow] = React.useState(false);
+
+  return (
+    <>
+      <Button
+        inline
+        text="View subheading"
+        onClick={() => setShouldShow(true)}
+      />
+      {shouldShow && (
+        <Layer zIndex={new FixedZIndex(2)}>
+          <AnimationController onDismissEnd={() => setShouldShow(false)}>
+            {({ onDismissStart }) => <SheetWithSubheading onDismissStart={onDismissStart} />}
           </AnimationController>
         </Layer>
       )}
@@ -465,7 +623,7 @@ function RefExample() {
                   size="md"
                 >
                   <Box color="white" minHeight={400} padding={8}>
-                    <Box marginBottom={4}>
+                    <Box marginBottom={8}>
                       <Heading size="md">Focused content</Heading>                
                     </Box>
                     <Button 
@@ -618,6 +776,17 @@ card(
           '- lg: 900px',
         ],
         href: 'sizesExample',
+      },
+      {
+        name: 'subHeading',
+        type: `React.Node`,
+        required: false,
+        defaultValue: null,
+        description: [
+          'Supply the container element that is going to be used as the Sheet sub-heading docker under the heading.',
+          'It can only be provided when a heading is also provided.',
+        ],
+        href: 'subHeadingExample',
       },
     ]}
   />
